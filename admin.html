@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Qara Bazar</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d0f;--bg2:#141417;--bg3:#1c1c21;--bg4:#24242b;
+  --border:#2e2e38;--border2:#3a3a48;
+  --text:#f0f0f5;--text2:#9898b0;--text3:#5a5a72;
+  --blue:#4a9eff;--blue-bg:#0e1e35;--blue-border:#1a3560;
+  --green:#3ecf7a;--green-bg:#0b2018;--green-border:#163d28;
+  --red:#ff5f5f;--red-bg:#2a0e0e;--red-border:#4a1a1a;
+  --amber:#f59e0b;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* LOGIN */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:100%;max-width:360px}
+.login-card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;margin-bottom:6px}
+.login-card p{font-size:13px;color:var(--text3);margin-bottom:2rem}
+.field{margin-bottom:1rem}
+.field label{display:block;font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.field input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg3);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.field input:focus{border-color:var(--blue)}
+.btn-primary{width:100%;padding:11px;border:none;border-radius:10px;background:var(--blue);color:#fff;font-size:14px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s;margin-top:.5rem}
+.btn-primary:hover{opacity:.85}
+.login-err{font-size:12px;color:var(--red);margin-top:10px;display:none}
+
+/* ADMIN APP */
+#adminApp{display:none;padding:2rem 1.5rem;max-width:1100px;margin:0 auto}
+.admin-topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:2rem}
+.admin-topbar h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px}
+.topbar-right{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn-sec{padding:8px 16px;border:1px solid var(--border);border-radius:10px;background:transparent;color:var(--text2);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.btn-sec:hover{border-color:var(--border2);color:var(--text)}
+.btn-green{padding:8px 16px;border:1px solid var(--green-border);border-radius:10px;background:var(--green-bg);color:var(--green);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s}
+.btn-green:hover{opacity:.8}
+.btn-red-sm{padding:4px 10px;border:1px solid var(--red-border);border-radius:7px;background:var(--red-bg);color:var(--red);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s}
+.btn-red-sm:hover{opacity:.7}
+.btn-blue-sm{padding:4px 10px;border:1px solid var(--blue-border);border-radius:7px;background:var(--blue-bg);color:var(--blue);font-size:11px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:opacity .15s}
+.btn-blue-sm:hover{opacity:.7}
+
+/* ADD FORM */
+.add-panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:2rem}
+.add-panel h3{font-size:14px;font-weight:500;color:var(--text);margin-bottom:1.25rem;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:1rem}
+.form-grid .field{margin:0}
+.field select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:10px;background:var(--bg3);color:var(--text);font-size:14px;font-family:'DM Sans',sans-serif;outline:none}
+.form-actions{display:flex;gap:10px;justify-content:flex-end}
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);padding:10px 18px;border-radius:10px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{padding:10px 12px;text-align:left;font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;background:var(--bg2);border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:var(--bg2)}
+tbody td{padding:10px 12px;color:var(--text);vertical-align:middle}
+tbody td.muted{color:var(--text3);font-size:12px}
+.inline-input{padding:4px 8px;border:1px solid var(--border);border-radius:6px;background:var(--bg3);color:var(--text);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;width:70px}
+.inline-input:focus{border-color:var(--blue)}
+.trend-up{color:var(--green);font-size:12px}
+.trend-dn{color:var(--red);font-size:12px}
+.trend-st{color:var(--text3);font-size:12px}
+.cat-badge{font-size:11px;padding:2px 8px;border-radius:8px}
+.cb-qara{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.cb-silah{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.cb-soygun{background:#221008;color:var(--amber);border:1px solid #3d2a0a}
+.stats-mini{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:1.5rem;padding:1rem 1.25rem;background:var(--bg2);border-radius:12px;border:1px solid var(--border)}
+.sm-item{font-size:13px;color:var(--text2)}.sm-item span{color:var(--text);font-weight:500;margin-left:6px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <h2>ADMIN PANELİ</h2>
+    <p>Qara Bazar — İdarəetmə sistemi</p>
+    <div class="field">
+      <label>İstifadəçi adı</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="field">
+      <label>Şifrə</label>
+      <input type="password" id="loginPass" placeholder="••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Daxil ol</button>
+    <div class="login-err" id="loginErr">İstifadəçi adı və ya şifrə yanlışdır.</div>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div id="adminApp">
+  <div class="admin-topbar">
+    <div style="display:flex;align-items:baseline;gap:12px">
+      <h1>ADMIN PANELİ</h1>
+      <span style="font-size:12px;color:var(--text3)">Qara Bazar</span>
+    </div>
+    <div class="topbar-right">
+      <span id="lastUpdateLabel" style="font-size:12px;color:var(--text3)"></span>
+      <button class="btn-sec" onclick="exportData()">JSON export</button>
+      <button class="btn-sec" onclick="importClick()">JSON import</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      <button class="btn-green" onclick="saveAndPublish()">Yadda saxla & Yayımla</button>
+      <button class="btn-sec" onclick="goPublic()">Sayta bax →</button>
+      <button class="btn-sec" onclick="doLogout()">Çıx</button>
+    </div>
+  </div>
+
+  <div class="stats-mini" id="statsMini"></div>
+
+  <!-- ADD FORM -->
+  <div class="add-panel">
+    <h3>Yeni mal əlavə et</h3>
+    <div class="form-grid">
+      <div class="field"><label>Mal adı</label><input type="text" id="fName" placeholder="Kəndir"></div>
+      <div class="field"><label>Kateqoriya</label>
+        <select id="fCat">
+          <option>Qara bazar</option>
+          <option>Silah materialı</option>
+          <option>Soyğun avadanlığı</option>
+        </select>
+      </div>
+      <div class="field"><label>İkon (emoji)</label><input type="text" id="fIcon" placeholder="🪢" maxlength="4"></div>
+      <div class="field"><label>BTC qiymət</label><input type="number" id="fBtc" placeholder="7.4" step="0.1"></div>
+      <div class="field"><label>USD qiymət ($)</label><input type="number" id="fUsd" placeholder="740"></div>
+      <div class="field"><label>Net ($)</label><input type="number" id="fNet" placeholder="481"></div>
+      <div class="field"><label>Qara Pul</label><input type="number" id="fQara" placeholder="425"></div>
+      <div class="field"><label>Fərq ($)</label><input type="number" id="fDiff" placeholder="315"></div>
+      <div class="field"><label>Trend (%)</label><input type="number" id="fTrend" placeholder="-7.5" step="0.1"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-sec" onclick="clearForm()">Təmizlə</button>
+      <button class="btn-green" onclick="addItem()">+ Əlavə et</button>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>İkon</th><th>Ad</th><th>Kateqoriya</th>
+          <th>BTC</th><th>USD</th><th>Net</th><th>QP</th><th>Fərq</th><th>Trend</th><th>Əməliyyat</th>
+        </tr>
+      </thead>
+      <tbody id="adminTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const ADMIN_USER='admin';
+const ADMIN_PASS='qara2026';
+
+const DEFAULT_ITEMS=[
+  {name:'Kəndir',cat:'Qara bazar',icon:'🪢',btc:7.4,usd:740,net:481,qara:425,diff:315,trend:-7.5},
+  {name:'Kəpənək bıçağı',cat:'Qara bazar',icon:'🔪',btc:31,usd:3100,net:2015,qara:1782,diff:1318,trend:3.3},
+  {name:'Kömür',cat:'Qara bazar',icon:'🪨',btc:0.2,usd:20,net:13,qara:11,diff:9,trend:0},
+  {name:'Kükürd',cat:'Qara bazar',icon:'🟡',btc:0.3,usd:30,net:20,qara:18,diff:12,trend:0},
+  {name:'Etanol',cat:'Qara bazar',icon:'🧴',btc:6.2,usd:620,net:403,qara:356,diff:264,trend:3.3},
+  {name:'Gübrə',cat:'Qara bazar',icon:'🌱',btc:26,usd:2600,net:1690,qara:1495,diff:1105,trend:4.0},
+  {name:'Dibçək',cat:'Qara bazar',icon:'🪣',btc:25,usd:2500,net:1625,qara:1437,diff:1063,trend:0},
+  {name:'Duz turşusu',cat:'Qara bazar',icon:'⚗️',btc:35,usd:3500,net:2275,qara:2012,diff:1488,trend:0},
+  {name:'Bandaj',cat:'Qara bazar',icon:'🩹',btc:2,usd:200,net:130,qara:115,diff:85,trend:0},
+  {name:'Bel',cat:'Qara bazar',icon:'⛏️',btc:155,usd:15500,net:10075,qara:8910,diff:6590,trend:3.3},
+  {name:'Ağır zireh',cat:'Qara bazar',icon:'🦺',btc:47,usd:4700,net:3055,qara:2702,diff:1998,trend:-6.0},
+  {name:'BZ qazı',cat:'Qara bazar',icon:'💨',btc:26,usd:2600,net:1690,qara:1495,diff:1105,trend:4.0},
+  {name:'Amonyak',cat:'Qara bazar',icon:'🧪',btc:5.9,usd:590,net:384,qara:340,diff:250,trend:-1.7},
+  {name:'Aseton',cat:'Qara bazar',icon:'🧪',btc:5.6,usd:560,net:364,qara:322,diff:238,trend:-6.7},
+  {name:'Qandal açarı',cat:'Qara bazar',icon:'🗝️',btc:28,usd:2800,net:1820,qara:1610,diff:1190,trend:-6.7},
+  {name:'Alət dəsti',cat:'Qara bazar',icon:'🧰',btc:14,usd:1400,net:910,qara:805,diff:595,trend:-12.5},
+  {name:'İşgəncə dəsti',cat:'Qara bazar',icon:'⚙️',btc:366,usd:36600,net:23790,qara:21039,diff:15561,trend:-8.5},
+  {name:'Şüşə kəsmə aləti',cat:'Qara bazar',icon:'💎',btc:24,usd:2400,net:1560,qara:1380,diff:1020,trend:-4.0},
+  {name:'Təkmilləşmiş kilid açarı',cat:'Qara bazar',icon:'🔑',btc:23,usd:2300,net:1495,qara:1322,diff:978,trend:-8.0},
+  {name:'Xüsusi benzin',cat:'Qara bazar',icon:'⛽',btc:22,usd:2200,net:1430,qara:1265,diff:935,trend:-12.0},
+  {name:'Tapanca susdurucusu',cat:'Qara bazar',icon:'🔫',btc:37,usd:3700,net:2405,qara:2127,diff:1573,trend:-7.5},
+  {name:'Torba',cat:'Qara bazar',icon:'👜',btc:11,usd:1100,net:715,qara:632,diff:468,trend:-8.3},
+  {name:'Soyğun çantası',cat:'Qara bazar',icon:'💼',btc:11,usd:1100,net:715,qara:632,diff:468,trend:-8.3},
+  {name:'Suvarma qabı',cat:'Qara bazar',icon:'🪣',btc:19,usd:1900,net:1235,qara:1092,diff:808,trend:-5.0},
+  {name:'Radio',cat:'Qara bazar',icon:'📻',btc:19,usd:1900,net:1235,qara:1092,diff:808,trend:-5.0},
+  {name:'Sement',cat:'Qara bazar',icon:'🧱',btc:15,usd:1500,net:975,qara:862,diff:638,trend:0},
+  {name:'Qandal',cat:'Qara bazar',icon:'⛓️',btc:24,usd:2400,net:1560,qara:1380,diff:1020,trend:-4.0},
+  {name:'Qayçı',cat:'Qara bazar',icon:'✂️',btc:78,usd:7800,net:5070,qara:4484,diff:3316,trend:-2.5},
+  {name:'Metamfetamin dəsti',cat:'Qara bazar',icon:'⚗️',btc:37,usd:3700,net:2405,qara:2127,diff:1573,trend:-7.5},
+  {name:'Pseudoefedrin həbləri',cat:'Qara bazar',icon:'💊',btc:9.1,usd:910,net:592,qara:524,diff:386,trend:-9.0},
+  {name:'Litium lövhəsi',cat:'Qara bazar',icon:'🔋',btc:7.6,usd:760,net:494,qara:437,diff:323,trend:-5.0},
+  {name:'Lom',cat:'Qara bazar',icon:'🔩',btc:19,usd:1900,net:1235,qara:1092,diff:808,trend:-5.0},
+  {name:'Karbon komuru',cat:'Silah materialı',icon:'⬛',btc:0,usd:90,net:90,qara:80,diff:10,trend:0},
+  {name:'Metal qirintisi',cat:'Silah materialı',icon:'🔩',btc:0,usd:75,net:75,qara:66,diff:9,trend:0},
+  {name:'Elektronik dest',cat:'Silah materialı',icon:'📟',btc:0,usd:4000,net:4000,qara:3537,diff:463,trend:0},
+  {name:'Gumus kulce',cat:'Silah materialı',icon:'🥈',btc:0,usd:7000,net:7000,qara:6191,diff:809,trend:0},
+  {name:'Demir',cat:'Silah materialı',icon:'🔧',btc:0,usd:85,net:85,qara:75,diff:10,trend:0},
+  {name:'Demir kulce',cat:'Silah materialı',icon:'🔘',btc:0,usd:8000,net:8000,qara:7075,diff:925,trend:0},
+  {name:'Aluminium',cat:'Silah materialı',icon:'🪟',btc:0,usd:95,net:95,qara:84,diff:11,trend:0},
+  {name:'Barit',cat:'Silah materialı',icon:'🧊',btc:0,usd:190,net:190,qara:168,diff:22,trend:0},
+  {name:'Qizil kulce',cat:'Silah materialı',icon:'🥇',btc:0,usd:7000,net:7000,qara:6191,diff:809,trend:0},
+  {name:'Rezin',cat:'Silah materialı',icon:'⭕',btc:0,usd:90,net:90,qara:80,diff:10,trend:0},
+  {name:'Polad',cat:'Silah materialı',icon:'🔩',btc:0,usd:120,net:120,qara:106,diff:14,trend:0},
+  {name:'Purjun',cat:'Silah materialı',icon:'🌀',btc:0,usd:6000,net:6000,qara:5306,diff:694,trend:0},
+  {name:'Mis kulce',cat:'Silah materialı',icon:'🟤',btc:0,usd:3000,net:3000,qara:2653,diff:347,trend:0},
+  {name:'Plastik',cat:'Silah materialı',icon:'🟦',btc:0,usd:70,net:70,qara:62,diff:8,trend:0},
+  {name:'Bucaq dəyirmanı',cat:'Soyğun avadanlığı',icon:'🔨',btc:38,usd:3800,net:2470,qara:2184,diff:1616,trend:-5.0},
+  {name:'Haker cihazı',cat:'Soyğun avadanlığı',icon:'💻',btc:40,usd:4000,net:2600,qara:2299,diff:1701,trend:-11.1},
+  {name:'Yapışqan bomba',cat:'Soyğun avadanlığı',icon:'💣',btc:89,usd:8900,net:5785,qara:5116,diff:3784,trend:-1.1},
+  {name:'Soyğun dronu',cat:'Soyğun avadanlığı',icon:'🚁',btc:55,usd:5500,net:3575,qara:3162,diff:2338,trend:-8.3},
+  {name:'Soyğun qazması',cat:'Soyğun avadanlığı',icon:'⛏️',btc:75,usd:7500,net:4875,qara:4311,diff:3189,trend:0},
+  {name:'Möhkəm kəndir',cat:'Soyğun avadanlığı',icon:'🪢',btc:17,usd:1700,net:1105,qara:977,diff:723,trend:-5.6},
+  {name:'Qaz maskası',cat:'Soyğun avadanlığı',icon:'😷',btc:19,usd:1900,net:1235,qara:1092,diff:808,trend:-5.0},
+  {name:'Kilid açarı',cat:'Soyğun avadanlığı',icon:'🗝️',btc:2.1,usd:210,net:137,qara:121,diff:89,trend:5.0},
+  {name:'Lövbər',cat:'Soyğun avadanlığı',icon:'⚓',btc:31,usd:3100,net:2015,qara:1782,diff:1318,trend:-11.4},
+];
+
+let items=[];
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    sessionStorage.setItem('qb_auth','1');
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminApp').style.display='block';
+    loadItems();
+    renderTable();
+    renderStats();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('qb_auth');
+  location.reload();
+}
+
+function goPublic(){window.open('index.html','_blank');}
+
+function loadItems(){
+  try{
+    const s=localStorage.getItem('qb_items');
+    items=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_ITEMS));
+  }catch(e){items=JSON.parse(JSON.stringify(DEFAULT_ITEMS));}
+}
+
+function saveItems(){
+  localStorage.setItem('qb_items',JSON.stringify(items));
+}
+
+function saveAndPublish(){
+  saveItems();
+  const now=new Date();
+  const d=now.getDate().toString().padStart(2,'0');
+  const m=(now.getMonth()+1).toString().padStart(2,'0');
+  const y=now.getFullYear();
+  const dateStr=d+'.'+m+'.'+y;
+  localStorage.setItem('qb_lastupdate',dateStr);
+  document.getElementById('lastUpdateLabel').textContent='Son yeniləmə: '+dateStr;
+  showToast('Yayımlandı! Sayt yeniləndi.');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function catBadge(c){
+  if(c==='Qara bazar') return`<span class="cat-badge cb-qara">QB</span>`;
+  if(c==='Silah materialı') return`<span class="cat-badge cb-silah">SM</span>`;
+  return`<span class="cat-badge cb-soygun">SA</span>`;
+}
+
+function trendCell(t){
+  if(t>0) return`<span class="trend-up">+${t}%</span>`;
+  if(t<0) return`<span class="trend-dn">${t}%</span>`;
+  return`<span class="trend-st">sabit</span>`;
+}
+
+function renderTable(){
+  document.getElementById('adminTbody').innerHTML=items.map((item,idx)=>`
+    <tr id="row-${idx}">
+      <td style="font-size:18px">${item.icon||'📦'}</td>
+      <td style="font-weight:500;min-width:140px">${item.name}</td>
+      <td>${catBadge(item.cat)}</td>
+      <td class="muted">${item.btc>0?item.btc:'—'}</td>
+      <td><input class="inline-input" value="${item.usd}" onchange="updateField(${idx},'usd',this.value)"></td>
+      <td><input class="inline-input" value="${item.net}" onchange="updateField(${idx},'net',this.value)"></td>
+      <td><input class="inline-input" value="${item.qara}" onchange="updateField(${idx},'qara',this.value)"></td>
+      <td><input class="inline-input" value="${item.diff}" onchange="updateField(${idx},'diff',this.value)"></td>
+      <td><input class="inline-input" style="width:60px" value="${item.trend}" onchange="updateField(${idx},'trend',this.value)"></td>
+      <td style="white-space:nowrap">
+        <button class="btn-blue-sm" onclick="editItem(${idx})">Düzəliş</button>
+        <button class="btn-red-sm" onclick="deleteItem(${idx})" style="margin-left:4px">Sil</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderStats(){
+  const total=items.length;
+  const rising=items.filter(i=>i.trend>0).length;
+  const falling=items.filter(i=>i.trend<0).length;
+  const lu=localStorage.getItem('qb_lastupdate')||'—';
+  document.getElementById('statsMini').innerHTML=`
+    <div class="sm-item">Cəmi mal:<span>${total}</span></div>
+    <div class="sm-item">Artan:<span style="color:var(--green)">${rising}</span></div>
+    <div class="sm-item">Enən:<span style="color:var(--red)">${falling}</span></div>
+    <div class="sm-item">Son yeniləmə:<span>${lu}</span></div>
+  `;
+  document.getElementById('lastUpdateLabel').textContent=lu!=='—'?'Son yeniləmə: '+lu:'';
+}
+
+function updateField(idx,field,val){
+  items[idx][field]=parseFloat(val)||0;
+}
+
+function deleteItem(idx){
+  if(!confirm('"'+items[idx].name+'" silinsin?')) return;
+  items.splice(idx,1);
+  renderTable();
+  renderStats();
+  showToast('Silindi. Yayımlamaq üçün "Yadda saxla" düyməsinə bas.');
+}
+
+function editItem(idx){
+  const i=items[idx];
+  document.getElementById('fName').value=i.name;
+  document.getElementById('fCat').value=i.cat;
+  document.getElementById('fIcon').value=i.icon||'';
+  document.getElementById('fBtc').value=i.btc;
+  document.getElementById('fUsd').value=i.usd;
+  document.getElementById('fNet').value=i.net;
+  document.getElementById('fQara').value=i.qara;
+  document.getElementById('fDiff').value=i.diff;
+  document.getElementById('fTrend').value=i.trend;
+  deleteItem(idx);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addItem(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){showToast('Ad boş ola bilməz!');return;}
+  const item={
+    name,
+    cat:document.getElementById('fCat').value,
+    icon:document.getElementById('fIcon').value||'📦',
+    btc:parseFloat(document.getElementById('fBtc').value)||0,
+    usd:parseFloat(document.getElementById('fUsd').value)||0,
+    net:parseFloat(document.getElementById('fNet').value)||0,
+    qara:parseFloat(document.getElementById('fQara').value)||0,
+    diff:parseFloat(document.getElementById('fDiff').value)||0,
+    trend:parseFloat(document.getElementById('fTrend').value)||0,
+  };
+  items.unshift(item);
+  renderTable();
+  renderStats();
+  clearForm();
+  showToast('Əlavə edildi! Yayımlamaq üçün "Yadda saxla" düyməsinə bas.');
+}
+
+function clearForm(){
+  ['fName','fIcon','fBtc','fUsd','fNet','fQara','fDiff','fTrend'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='qara_bazar_data.json';
+  a.click();
+}
+
+function importClick(){document.getElementById('importFile').click();}
+
+function importData(e){
+  const file=e.target.files[0];
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const data=JSON.parse(ev.target.result);
+      if(!Array.isArray(data)) throw new Error();
+      items=data;
+      renderTable();
+      renderStats();
+      showToast('Import edildi! Yayımlamaq üçün "Yadda saxla" düyməsinə bas.');
+    }catch(err){showToast('JSON faylı yanlışdır!');}
+  };
+  r.readAsText(file);
+  e.target.value='';
+}
+
+if(sessionStorage.getItem('qb_auth')==='1'){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('adminApp').style.display='block';
+  loadItems();
+  renderTable();
+  renderStats();
+}
+</script>
+</body>
+</html>
